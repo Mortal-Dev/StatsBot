@@ -17,7 +17,18 @@ namespace StatsBot
         public CommandsNextExtension Commands { get; private set; }
         public async Task RunAsync() 
         {
-            #region config
+            RegisterConfig();
+
+            Client.Ready += OnClientReady;
+
+            RegisterCommands();
+
+            await Client.ConnectAsync();
+            await Task.Delay(-1);
+        }
+
+        private void RegisterConfig()
+        {
             string json = string.Empty;
 
             using (var fs = File.OpenRead("config.json"))
@@ -39,13 +50,10 @@ namespace StatsBot
             };
 
             Client = new DiscordClient(config);
+        }
 
-            #endregion
-
-            Client.Ready += OnClientReady;
-
-            #region commands
-
+        private void RegisterCommands()
+        {
             CommandsNextConfiguration commandsConfig = new CommandsNextConfiguration()
             {
                 StringPrefixes = new string[] { configJson.Prefix },
@@ -60,11 +68,6 @@ namespace StatsBot
             Commands.RegisterCommands<StatsCommand>();
             Commands.RegisterCommands<GamesCommand>();
             Commands.RegisterCommands<PlatformsCommand>();
-
-            #endregion
-
-            await Client.ConnectAsync();
-            await Task.Delay(-1);
         }
 
         private Task OnClientReady(object sender, ReadyEventArgs e)
